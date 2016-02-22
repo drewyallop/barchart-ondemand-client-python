@@ -1,7 +1,7 @@
 ## Python client for Barchart OnDemand
 
 
-Get free API key at:
+Get a free API key at:
 
  - http://freemarketdataapi.barchartondemand.com/
 
@@ -9,10 +9,15 @@ Get free API key at:
 
 * getHistory
 * getQuote
+* getFinancialHighlights (in development, may not work with free keys)
 
 ### Example Code
 
-[See how to use the client in your project here](https://github.com/lanshark/barchart-ondemand-client-python/blob/master/samples/main.py).
+[See how to use the client in your project here](https://github.com/lanshark/ls-barchart-ondemand-client-python/blob/master/samples/main.py).
+
+To set the API_KEY for these applications, set an environment variable as follows:
+
+    export BARCHART_API_KEY="xxxxxxxxxxxxxxxxxxxx"
 
 ### Additional remarks
 

@@ -19,7 +19,7 @@ import pprint
 import requests_cache
 session = requests_cache.CachedSession(cache_name='cache',
                                        backend='sqlite', expire_after=datetime.timedelta(days=1))
-# session = None # pass a None session to avoid caching queries
+# session = None  # pass a None session to avoid caching queries
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -29,7 +29,7 @@ print('===========================\n')
 # Set Up Common Parameters
 one_symbol = "IBM"
 many_symbols = ["BAC", "IBM", "GOOG", "HBAN"]
-startDate = datetime.date(year=2015, month=12, day=15)
+startDate = datetime.date(year=2016, month=1, day=1)
 
 # getQuote with ONE symbol
 print('%s Quote' % (one_symbol,))
@@ -54,11 +54,6 @@ print(pp.pprint(quotes))
 print('\nHistory of %s since %s' % (one_symbol, startDate,))
 print('===============================')
 history = getHistory(one_symbol, typ='daily', startDate=startDate, session=session)
-print(type(history))
-for symbol in history:
-    for day in symbol:
-        print(day)
-        # day['tradeTimestamp'] = day['tradeTimestamp'].isoformat()
 print(pp.pprint(history))
 
 # getHistory with SEVERAL symbols
@@ -66,9 +61,4 @@ print(pp.pprint(history))
 print('Histories of %s since %s' % (many_symbols, startDate,))
 print('============================================================')
 histories = getHistory(many_symbols, typ='daily', startDate=startDate, session=session)
-print(type(histories))
-for symbol in histories:
-    for day in symbol:
-        print(day)
-        # day['tradeTimestamp'] = day['tradeTimestamp'].isoformat()
 print(pp.pprint(histories))

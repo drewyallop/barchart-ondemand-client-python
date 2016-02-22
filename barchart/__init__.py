@@ -44,6 +44,7 @@ def _parse_json_response(response):
     status_code_expected = 200
     if status_code == status_code_expected:
         response = response.json()
+
         try:
             if response['status']['code'] == status_code_expected:
                 return response

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages  # Always prefer setuptools over distutils
+from setuptools import setup, find_packages
 from os import path
 import io
 
@@ -33,6 +33,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
 
         'License :: OSI Approved :: MIT License',
     ],

@@ -4,4 +4,4 @@ __license__ = "BSD"
 __version__ = "0.0.2"
 __email__ = "ssharkey@lanshark.com"
 __status__ = "Development"
-__url__ = 'https://github.com/lanshark/barchart-ondemand-client-python'
+__url__ = 'https://github.com/lanshark/ls-barchart-ondemand-client-python'

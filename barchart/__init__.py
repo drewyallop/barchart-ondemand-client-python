@@ -14,15 +14,15 @@ import requests
 import six
 from collections import OrderedDict
 
-URL_BASE = 'http://marketdata.websol.barchart.com'
-TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%S%z'
-DATE_FMT = '%Y-%m-%d'
-TIMESTAMP_NOSEP_FMT = '%Y%m%d%H%M%S'
+URL_BASE = "http://marketdata.websol.barchart.com"
+TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S%z"
+DATE_FMT = "%Y-%m-%d"
+TIMESTAMP_NOSEP_FMT = "%Y%m%d%H%M%S"
 
 try:
-    API_KEY = os.environ['BARCHART_API_KEY']
+    API_KEY = os.environ["BARCHART_API_KEY"]
 except:
-    API_KEY = ''
+    API_KEY = ""
 
 
 def _create_from(session):
@@ -46,16 +46,18 @@ def _parse_json_response(response):
         response = response.json()
 
         try:
-            if response['status']['code'] == status_code_expected:
+            if response["status"]["code"] == status_code_expected:
                 return response
             else:
-                raise NotImplementedError("Error code: %d - %s" %
-                                          (response['status']['code'], response['status']['message']))
-        except Exception as e:
-            raise e
+                raise NotImplementedError("Error code: {0} - {1}".format(
+                    response["status"]["code"], response["status"]["message"]
+                ))
+        except Exception as err:
+            raise err
     else:
-        raise NotImplementedError("HTTP status code is %d instead of %d" %
-                                  (status_code, status_code_expected))
+        raise NotImplementedError("HTTP status code is {0} instead of {1}".format(
+            status_code, status_code_expected
+        ))
 
 
 def _parse_timestamp(results, cols, timestamp_fmt=TIMESTAMP_FMT):
@@ -66,10 +68,10 @@ def _parse_timestamp(results, cols, timestamp_fmt=TIMESTAMP_FMT):
         if isinstance(results, list):
             for result in results:
                 s = result[col]
-                result[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(':', ''), timestamp_fmt)
+                result[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
         else:
             s = results[col]
-            results[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(':', ''), timestamp_fmt)
+            results[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
     return results
 
 
@@ -88,23 +90,24 @@ def _parse_date(results, cols, date_fmt=DATE_FMT):
     return results
 
 
-def getQuote(symbols, session=None):
+def getQuote(symbols, fields=None, session=None):
     """
     Returns quote for one (or several) symbol(s)
     getQuote sample query:
         http://marketdata.websol.barchart.com/getQuote.json?key=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
     """
-    endpoint = '/getQuote.json'
+    endpoint = "/getQuote.json"
     url = URL_BASE + endpoint
     params = {
-        'key': API_KEY,
-        'symbols': ",".join(symbols) if isinstance(symbols, list) else symbols
+        "key": API_KEY,
+        "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
+        "fields": ",".join(fields) if isinstance(fields, list) else fields
     }
     session = _create_from(session)
     response = session.get(url, params=params)
     response = _parse_json_response(response)
-    timestamp_cols = ['serverTimestamp', 'tradeTimestamp']
-    results = response['results']
+    timestamp_cols = ["serverTimestamp", "tradeTimestamp"]
+    results = response["results"]
     if isinstance(symbols, six.string_types):
         d = results[0]
         d = _parse_timestamp(d, timestamp_cols)
@@ -115,32 +118,32 @@ def getQuote(symbols, session=None):
         return results  # returns a list
 
 
-def _getHistory_one_symbol(symbol, startDate, typ='daily', session=None):
+def _getHistory_one_symbol(symbol, startDate, typ="daily", session=None):
     """
     getHistory sample query:
         http://marketdata.websol.barchart.com/getHistory.json?key=YOURAPIKEY&symbol=IBM&type=daily&startDate=20140928000000
     """
 
-    endpoint = '/getHistory.json'
+    endpoint = "/getHistory.json"
     url = URL_BASE + endpoint
     params = {
-        'key': API_KEY,
-        'symbol': symbol,
-        'type': typ,
-        'startDate': startDate
+        "key": API_KEY,
+        "symbol": symbol,
+        "type": typ,
+        "startDate": startDate
     }
     session = _create_from(session)
     response = session.get(url, params=params)
     response = _parse_json_response(response)
-    d = response['results']
-    timestamp_cols = ['timestamp']
-    date_cols = ['tradingDay']
+    d = response["results"]
+    timestamp_cols = ["timestamp"]
+    date_cols = ["tradingDay"]
     d = _parse_timestamp(d, timestamp_cols)
     d = _parse_date(d, date_cols)
     return d
 
 
-def getHistory(symbols, startDate, typ='daily', session=None):
+def getHistory(symbols, startDate, typ="daily", session=None):
     """
     Returns history for ONE (or SEVERAL) symbol(s)
     """

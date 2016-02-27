@@ -5,11 +5,11 @@
 A Python library for Barchart API
 http://freemarketdataapi.barchartondemand.com/.
 
-Fix up Documentation HERE
+Needs Logging, better docs, and completion of APIs (getHistory and getFinancialHighlights)
 """
 
 import os
-import datetime
+from datetime import datetime
 import requests
 import six
 from collections import OrderedDict
@@ -18,6 +18,20 @@ URL_BASE = "http://marketdata.websol.barchart.com"
 TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S%z"
 DATE_FMT = "%Y-%m-%d"
 TIMESTAMP_NOSEP_FMT = "%Y%m%d%H%M%S"
+
+QUOTE_TIMESTAMP_COLS = [
+    "serverTimestamp",
+    "tradeTimestamp",
+    "preMarketTimestamp"
+]
+QUOTE_DATE_COLS = [
+    "previousTimestamp",
+    "fiftyTwoWkHighDate",
+    "fiftyTwoWkLowDate",
+    "exDividendDate",
+    "expirationDate",
+    "twelveMnthPctDate",
+]
 
 try:
     API_KEY = os.environ["BARCHART_API_KEY"]
@@ -38,7 +52,9 @@ def _create_from(session):
 
 def _parse_json_response(response):
     """
-    Parse JSON response
+    Parse JSON response.  Checks for expected 200 OK returns json if found.
+
+    Throws NotImplementedError exception.
     """
     status_code = response.status_code
     status_code_expected = 200
@@ -65,13 +81,18 @@ def _parse_timestamp(results, cols, timestamp_fmt=TIMESTAMP_FMT):
     Returns a result where string timestamps have been parsed
     """
     for col in cols:
-        if isinstance(results, list):
-            for result in results:
-                s = result[col]
-                result[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
-        else:
-            s = results[col]
-            results[col] = datetime.datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
+        try:
+            if isinstance(results, list):
+                for result in results:
+                    s = result[col]
+                    if s:
+                        result[col] = datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
+            else:
+                s = results[col]
+                if s:
+                    results[col] = datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
+        except KeyError:
+            pass
     return results
 
 
@@ -80,22 +101,93 @@ def _parse_date(results, cols, date_fmt=DATE_FMT):
     Returns a result where string dates have been parsed
     """
     for col in cols:
-        if isinstance(results, list):
-            for result in results:
-                s = result[col]
-                result[col] = datetime.datetime.strptime(s, date_fmt).date()
-        else:
-            s = results[col]
-            results[col] = datetime.datetime.strptime(s, date_fmt).date()
+        try:
+            if isinstance(results, list):
+                for result in results:
+                    s = result[col]
+                    if s:
+                        result[col] = datetime.strptime(s, date_fmt).date()
+            else:
+                s = results[col]
+                if s:
+                    results[col] = datetime.strptime(s, date_fmt).date()
+        except KeyError:
+            pass
     return results
 
 
 def getQuote(symbols, fields=None, session=None):
     """
-    Returns quote for one (or several) symbol(s)
+    Returns stock quote for one (or several) symbol(s), comma separated.
+
     getQuote sample query:
         http://marketdata.websol.barchart.com/getQuote.json?key=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
+
+    Fields always returned are:
+
+        symbol                      (string)
+        name                        (string)
+        dayCode                     (string) 1-9, 0, A-U
+        serverTimestamp             (datetime)
+        mode                        (string) R=realtime, I=delayed, D=end-of-day
+        lastPrice                   (double)
+        tradeTimestamp              (datetime)
+        netChange                   (double)
+        percentChange               (double)
+        unitCode                    (string)
+        open                        (double)
+        high                        (double)
+        low                         (double)
+        close                       (double), empty if market is open
+        numTrades                   (int)
+        dollarVolume                (double)
+        flag                        (string) c=closed, p=pre-open, s=settled
+        volume                      (int)
+        previousVolume              (int)
+
+    Optional Fields (must be requested in fields) are:
+        tradeSize                   (int)
+        tick                        (string)  +, ., or -
+        previousLastPrice           (double)
+        previousTimestamp           (date)
+        bid                         (double)
+        bidSize                     (int)
+        ask                         (double)
+        askSize                     (int)
+        previousClose               (double)
+        settlement                  (double)
+        previousSettlement          (double)
+        openInterest                (double)
+        fiftyTwoWkHigh              (double)
+        fiftyTwoWkHighDate          (date)
+        fiftyTwoWkLow               (double)
+        fiftyTwoWkLowDate           (date)
+        avgVolume                   (int)
+        sharesOutstanding           (int)
+        dividendRateAnnual          (float)
+        dividendYieldAnnual         (float)
+        exDividendDate              (date)
+        impliedVolatility           (double)
+        twentyDayAvgVol             (double)
+        month                       (string)  Futures Only
+        year                        (string)  Futures Only
+        expirationDate              (date)    Futures Only
+        lastTradingDay              (string)  Futures Only
+        twelveMnthPct               (double)
+        twelveMnthPctDate           (date)
+        preMarketPrice              (double)
+        preMarketNetChange          (double)
+        preMarketPercentChange      (double)
+        preMarketTimestamp          (datetime)
+        afterHoursPrice             (double)
+        afterHoursNetChange         (double)
+        afterHoursPercentChange     (double)
+        afterHoursTimestamp         (datetime)
+        averageWeeklyVolume         (int)
+        averageQuarterlyVolume      (int)
+        exchangeMargin              (string)
     """
+
     endpoint = "/getQuote.json"
     url = URL_BASE + endpoint
     params = {
@@ -106,32 +198,87 @@ def getQuote(symbols, fields=None, session=None):
     session = _create_from(session)
     response = session.get(url, params=params)
     response = _parse_json_response(response)
-    timestamp_cols = ["serverTimestamp", "tradeTimestamp"]
     results = response["results"]
     if isinstance(symbols, six.string_types):
         d = results[0]
-        d = _parse_timestamp(d, timestamp_cols)
+        d = _parse_timestamp(d, QUOTE_TIMESTAMP_COLS)
+        d = _parse_date(d, QUOTE_DATE_COLS)
         return d  # returns a dict
     else:
         for i, d in enumerate(results):
-            d = _parse_timestamp(d, timestamp_cols)
-        return results  # returns a list
+            d = _parse_timestamp(d, QUOTE_TIMESTAMP_COLS)
+            d = _parse_date(d, QUOTE_DATE_COLS)
+        return results  # returns a list of dicts
 
 
-def _getHistory_one_symbol(symbol, startDate, typ="daily", session=None):
+def _getSingleHistory(
+    symbol,
+    startDate=None,
+    endDate=None,
+    typ="daily",
+    maxRecords=None,
+    interval=None,
+    order="asc",
+    session=None
+):
     """
     getHistory sample query:
         http://marketdata.websol.barchart.com/getHistory.json?key=YOURAPIKEY&symbol=IBM&type=daily&startDate=20140928000000
+
+    inputs:
+        symbol          (string)
+        type            (enum:
+                            ticks,
+                            minutes,
+                            nearbyMinutes,
+                            formTMinutes,
+                            daily (default), dailyNearest, dailyContinue,
+                            weekly, weeklyNearest, weeklyContinue,
+                            monthly, monthlyNearest, monthlyContinue,
+                            quarterly, quarterlyNearest, quarterlyContinue,
+                            yearly, yearlyNearest, yearlyContinue).
+        startDate       (yyyymmdd[hhmm[ss]]) (defaults today)
+        endDate         (yyyymmdd[hhmm[ss]]) (defaults today)
+        maxRecords      (int)
+        interval        (int) default = 1 (minutes for minute query)
+        order           (enum: asc (default), desc)
+
+    There are other optional parameters (sessionFilter, splits, dividends, volume, nearby, exchange)
+    which are not supported at this time.
+
+    Always returns:
+        symbol          (string)
+        timestamp       (datetime)
+        tradingDay      (date)
+
+    Optionally returns (if requested?):
+        sessionCode     (string) G=electronic R=pit
+        tickPrice       (double)
+        tickSize        (int)
+        open            (double)
+        high            (double)
+        low             (double)
+        close           (double)
+        volume          (int)
+        openInterest    (int)
     """
 
     endpoint = "/getHistory.json"
     url = URL_BASE + endpoint
+
     params = {
         "key": API_KEY,
         "symbol": symbol,
         "type": typ,
-        "startDate": startDate
+        "startDate": startDate,
+        "order": order,
     }
+    if endDate:
+        params["endDate"] = endDate
+    if maxRecords:
+        params["maxRecords"] = maxRecords
+    if interval:
+        params["interval"] = interval
     session = _create_from(session)
     response = session.get(url, params=params)
     response = _parse_json_response(response)
@@ -143,7 +290,16 @@ def _getHistory_one_symbol(symbol, startDate, typ="daily", session=None):
     return d
 
 
-def getHistory(symbols, startDate, typ="daily", session=None):
+def getHistory(
+    symbols,
+    startDate,
+    endDate=None,
+    typ="daily",
+    maxRecords=None,
+    interval=None,
+    order="asc",
+    session=None
+):
     """
     Returns history for ONE (or SEVERAL) symbol(s)
     """
@@ -152,12 +308,35 @@ def getHistory(symbols, startDate, typ="daily", session=None):
     except Exception:
         # this should be logged and not catching everything
         pass
+    try:
+        endDate = endDate.strftime(TIMESTAMP_NOSEP_FMT)
+    except Exception:
+        # this should be logged and not catching everything
+        pass
 
     d = OrderedDict()
     if isinstance(symbols, list):
         for symbol in symbols:
-            d[symbol] = _getHistory_one_symbol(symbol, startDate, typ, session)
+            d[symbol] = _getSingleHistory(
+                symbol,
+                startDate,
+                endDate,
+                typ,
+                maxRecords,
+                interval,
+                order,
+                session
+            )
     else:
-        d[symbols] = _getHistory_one_symbol(symbols, startDate, typ, session)
+        d[symbols] = _getSingleHistory(
+            symbols,
+            startDate,
+            endDate,
+            typ,
+            maxRecords,
+            interval,
+            order,
+            session
+        )
 
     return d  # returns an OrderedDict

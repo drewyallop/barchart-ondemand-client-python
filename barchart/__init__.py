@@ -8,8 +8,9 @@ http://freemarketdataapi.barchartondemand.com/.
 Needs Logging, better docs, and completion of APIs (getHistory and getFinancialHighlights)
 """
 
-import os
 from datetime import datetime
+from json import JSONDecodeError
+import os
 import requests
 import six
 from collections import OrderedDict
@@ -59,7 +60,10 @@ def _parse_json_response(response):
     status_code = response.status_code
     status_code_expected = 200
     if status_code == status_code_expected:
-        response = response.json()
+        try:
+            response = response.json()
+        except JSONDecodeError:
+            raise NotImplementedError("Invalid Json: {0}".format(response.text))
 
         try:
             if response["status"]["code"] == status_code_expected:
@@ -340,3 +344,62 @@ def getHistory(
         )
 
     return d  # returns an OrderedDict
+
+
+def getFinancialHighlights(symbols, fields=None, session=None):
+    """
+    Returns financial highlights for one (or several) symbol(s), comma separated.
+
+    getFinancialHighlights sample query:
+        http://marketdata.websol.barchart.com/getFinancialHighlights.json?key=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
+
+    Fields always returned are:
+
+        symbol                      (string)
+        marketCapitalization        (int)
+        insiderShareholders         (double)
+        annualRevenue               (int)
+        ttmRevenue                  (int)
+        sharesOutstanding           (int)
+        institutionalShareholders   (double)
+        oneYearReturn               (double)
+        threeYearReturn             (double)
+        fiveYearReturn              (double)
+        ttmRevenueGrowth            (int)
+        fiveYearRevenueGrowth       (double)
+        fiveYearEarningsGrowth      (double)
+        fiveYearDividentGrowth      (double)
+        annualEPS                   (double)
+        annualDividendRate          (double)
+        annualDividendYield         (double)
+
+    Optional Fields (must be requested in fields) are:
+        annualNetIncome             (int)
+        ttmNetIncome                (double)
+        ttmNetProfitMargin          (double)
+        lastQtrEPS                  (double)
+        ttmEPS                      (double)
+        twelveMonthEPSChg           (double)
+        peRatio                     (double)
+        recentEarnings              (double)
+        recentDividends             (double)
+        recentSplit                 (string)
+        beta                        (double)
+    """
+
+    endpoint = "/getFinancialHighlights.json"
+    url = URL_BASE + endpoint
+    params = {
+        "key": API_KEY,
+        "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
+        "fields": ",".join(fields) if isinstance(fields, list) else fields
+    }
+    session = _create_from(session)
+    response = session.get(url, params=params)
+    response = _parse_json_response(response)
+    results = response["results"]
+    if isinstance(symbols, six.string_types):
+        d = results[0]
+        return d  # returns a dict
+    else:
+        return results  # returns a list of dicts

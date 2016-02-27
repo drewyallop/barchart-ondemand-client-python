@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from barchart import getHistory, getQuote, QUOTE_TIMESTAMP_COLS, QUOTE_DATE_COLS
+from barchart import (
+    getHistory,
+    getQuote,
+    getFinancialHighlights,
+    QUOTE_TIMESTAMP_COLS,
+    QUOTE_DATE_COLS
+)
 
 # API key setup
 # =============
@@ -69,54 +75,103 @@ quote_fields = [
     "exchangeMargin"
 ]
 
+financial_fields = [
+    "annualNetIncome",
+    "ttmNetIncome",
+    "ttmNetProfitMargin",
+    "lastQtrEPS",
+    "ttmEPS",
+    "twelveMonthEPSChg",
+    "peRatio",
+    "recentEarnings",
+    "recentDividends",
+    "recentSplit",
+    "beta"
+]
+# SAS temporary, for testing...
+financial_fields = []
+
 # getQuote with ONE symbol
+# ========================
 print("{0} Quote".format(one_symbol))
 print("=========")
-quote = getQuote(one_symbol, fields=quote_fields, session=session)
-for timestamp in QUOTE_TIMESTAMP_COLS:
-    if timestamp in quote and quote[timestamp]:
-        quote[timestamp] = quote[timestamp].isoformat()
-for datefield in QUOTE_DATE_COLS:
-    if datefield in quote and quote[datefield]:
-        quote[datefield] = quote[datefield].isoformat()
-print(pp.pprint(quote))
-
-# getQuote with SEVERAL symbols
-# =============================
-print("\n{0} Quotes".format(many_symbols))
-print("=====================================")
-quotes = getQuote(many_symbols, fields=quote_fields, session=session)
-for quote in quotes:
+try:
+    quote = getQuote(one_symbol, fields=quote_fields, session=session)
     for timestamp in QUOTE_TIMESTAMP_COLS:
         if timestamp in quote and quote[timestamp]:
             quote[timestamp] = quote[timestamp].isoformat()
     for datefield in QUOTE_DATE_COLS:
         if datefield in quote and quote[datefield]:
             quote[datefield] = quote[datefield].isoformat()
-print(pp.pprint(quotes))
+    print(pp.pprint(quote))
+except NotImplementedError as err:
+    print("getQuote failed: {}".format(err))
+
+# getQuote with SEVERAL symbols
+# =============================
+print("\n{0} Quotes".format(many_symbols))
+print("=====================================")
+try:
+    quotes = getQuote(many_symbols, fields=quote_fields, session=session)
+    for quote in quotes:
+        for timestamp in QUOTE_TIMESTAMP_COLS:
+            if timestamp in quote and quote[timestamp]:
+                quote[timestamp] = quote[timestamp].isoformat()
+        for datefield in QUOTE_DATE_COLS:
+            if datefield in quote and quote[datefield]:
+                quote[datefield] = quote[datefield].isoformat()
+    print(pp.pprint(quotes))
+except NotImplementedError as err:
+    print("getQuote failed: {}".format(err))
 
 # getHistory with ONE symbol
 # ==========================
 print("\nHistory of {0} since {1}".format(one_symbol, startDate))
 print("===============================")
-history = getHistory(one_symbol, typ="daily", startDate=startDate, maxRecords=5, session=session)
-for key, val in history.items():
-    print("Symbol: {0}".format(key))
-    for v in val:
-        print("==========================")
-        v["timestamp"] = v["timestamp"].isoformat()
-        v["tradingDay"] = v["tradingDay"].isoformat()
-        print(pp.pprint(v))
+try:
+    history = getHistory(one_symbol, typ="daily", startDate=startDate, maxRecords=5, session=session)
+    for key, val in history.items():
+        print("Symbol: {0}".format(key))
+        for v in val:
+            print("==========================")
+            v["timestamp"] = v["timestamp"].isoformat()
+            v["tradingDay"] = v["tradingDay"].isoformat()
+            print(pp.pprint(v))
+except NotImplementedError as err:
+    print("getHistory failed: {}".format(err))
 
 # getHistory with SEVERAL symbols
 # ===============================
 print("\nHistories of {0} since {1}".format(many_symbols, startDate))
-histories = getHistory(many_symbols, typ="daily", startDate=startDate, maxRecords=5, order="desc", session=session)
-for key, history in histories.items():
-    print("============================================================")
-    print("Symbol: {0}".format(key))
-    for item in history:
-        print("==========================")
-        item["timestamp"] = item["timestamp"].isoformat()
-        item["tradingDay"] = item["tradingDay"].isoformat()
-        print(pp.pprint(item))
+try:
+    histories = getHistory(many_symbols, typ="daily", startDate=startDate, maxRecords=5, order="desc", session=session)
+    for key, history in histories.items():
+        print("============================================================")
+        print("Symbol: {0}".format(key))
+        for item in history:
+            print("==========================")
+            item["timestamp"] = item["timestamp"].isoformat()
+            item["tradingDay"] = item["tradingDay"].isoformat()
+            print(pp.pprint(item))
+except NotImplementedError as err:
+    print("getHistory failed: {}".format(err))
+
+# getFinancialHighlights with ONE symbol
+# ======================================
+print("\n{0} FinancialHighlights".format(one_symbol))
+print("=======================")
+try:
+    quote = getFinancialHighlights(one_symbol, fields=financial_fields, session=session)
+    print(pp.pprint(quote))
+except NotImplementedError as err:
+    print("getFinancialHighlights failed: {}".format(err))
+
+# getFinancialHighlights with SEVERAL symbols
+# ===========================================
+print("\n{0} FinancialHighlights".format(many_symbols))
+print("================================================")
+try:
+    financial_highlights = getFinancialHighlights(many_symbols, fields=financial_fields, session=session)
+    print(pp.pprint(financial_highlights))
+except NotImplementedError as err:
+    print("getFinancialHighlights failed: {}".format(err))

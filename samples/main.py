@@ -23,8 +23,8 @@ from barchart import (
 import datetime
 import pprint
 import requests_cache
-#session = requests_cache.CachedSession(cache_name="cache",
-#                                       backend="sqlite", expire_after=datetime.timedelta(days=1))
+session = requests_cache.CachedSession(cache_name="cache",
+                                       backend="sqlite", expire_after=datetime.timedelta(days=1))
 session = None  # pass a None session to avoid caching queries
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -88,8 +88,6 @@ financial_fields = [
     "recentSplit",
     "beta"
 ]
-# SAS temporary, for testing...
-financial_fields = []
 
 # getQuote with ONE symbol
 # ========================

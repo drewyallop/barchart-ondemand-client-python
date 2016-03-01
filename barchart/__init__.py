@@ -4,12 +4,11 @@
 """
 A Python library for Barchart API
 http://freemarketdataapi.barchartondemand.com/.
-
-Needs Logging, better docs, and completion of APIs (getHistory and getFinancialHighlights)
 """
 
 from datetime import datetime
 from json import JSONDecodeError
+import logging
 import os
 import requests
 import six
@@ -33,6 +32,12 @@ QUOTE_DATE_COLS = [
     "expirationDate",
     "twelveMnthPctDate",
 ]
+
+# set up for logging...
+logger = logging.getLogger(__name__)
+
+# Change to INFO to get logging...
+logger.setLevel(logging.INFO)
 
 try:
     API_KEY = os.environ["BARCHART_API_KEY"]
@@ -248,7 +253,7 @@ def _getSingleHistory(
         order           (enum: asc (default), desc)
 
     There are other optional parameters (sessionFilter, splits, dividends, volume, nearby, exchange)
-    which are not supported at this time.
+    which are NOT supported at this time.
 
     Always returns:
         symbol          (string)
@@ -310,12 +315,14 @@ def getHistory(
     try:
         startDate = startDate.strftime(TIMESTAMP_NOSEP_FMT)
     except Exception:
-        # this should be logged and not catching everything
+        # this should not be catching everything
+        logger.error("startDate invalid: {0}".format(startDate))
         pass
     try:
         endDate = endDate.strftime(TIMESTAMP_NOSEP_FMT)
     except Exception:
-        # this should be logged and not catching everything
+        # this should not be catching everything
+        logger.error("endDate invalid: {0}".format(endDate))
         pass
 
     d = OrderedDict()
@@ -348,6 +355,8 @@ def getHistory(
 
 def getFinancialHighlights(symbols, fields=None, session=None):
     """
+    (CURRENTLY UNTESTED - waiting on key...)
+
     Returns financial highlights for one (or several) symbol(s), comma separated.
 
     getFinancialHighlights sample query:

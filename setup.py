@@ -30,7 +30,9 @@ setup(
 
         "Programming Language :: Cython",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
@@ -41,7 +43,7 @@ setup(
     keywords="BarChartOnDemand python trading data client interface",
 
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
-    install_requires=[],
+    install_requires=["requests", "requests-cache"],
     extras_require={
         "dev": ["check-manifest", "pytest"],
         "test": ["coverage", "pytest"],

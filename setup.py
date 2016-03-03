@@ -43,7 +43,12 @@ setup(
     keywords="BarChartOnDemand python trading data client interface",
 
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
-    install_requires=["requests", "requests-cache"],
+    install_requires=[
+        "python-dateutil",
+        "requests",
+        "requests-cache",
+        "six"
+    ],
     extras_require={
         "dev": ["check-manifest", "pytest"],
         "test": ["coverage", "pytest"],

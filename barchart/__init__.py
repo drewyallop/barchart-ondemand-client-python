@@ -7,7 +7,7 @@ http://freemarketdataapi.barchartondemand.com/.
 """
 
 from datetime import datetime
-from json import JSONDecodeError
+from dateutil.parser import parse
 import logging
 import os
 import requests
@@ -21,7 +21,6 @@ URL_BASE = "http://marketdata.websol.barchart.com"
 # URL_BASE = "http://ondemand.websol.barchart.com"
 
 
-TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S%z"
 DATE_FMT = "%Y-%m-%d"
 TIMESTAMP_NOSEP_FMT = "%Y%m%d%H%M%S"
 
@@ -82,7 +81,8 @@ def _parse_json_response(response):
     if status_code == status_code_expected:
         try:
             response = response.json()
-        except JSONDecodeError:
+        # NOTE: simplejson raises JSONDecodeError, which is a subclass of ValueError...
+        except ValueError:
             raise NotImplementedError("Invalid Json: {0}".format(response.text))
 
         try:
@@ -100,7 +100,7 @@ def _parse_json_response(response):
         ))
 
 
-def _parse_timestamp(results, cols, timestamp_fmt=TIMESTAMP_FMT):
+def _parse_timestamp(results, cols):
     """
     Returns a result where string timestamps have been parsed
     """
@@ -110,11 +110,11 @@ def _parse_timestamp(results, cols, timestamp_fmt=TIMESTAMP_FMT):
                 for result in results:
                     s = result[col]
                     if s:
-                        result[col] = datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
+                        result[col] = parse(s)
             else:
                 s = results[col]
                 if s:
-                    results[col] = datetime.strptime(s[0:19] + s[19:].replace(":", ""), timestamp_fmt)
+                    results[col] = parse(s)
         except KeyError:
             pass
     return results

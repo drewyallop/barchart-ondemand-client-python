@@ -43,8 +43,8 @@ setup(
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
     install_requires=[],
     extras_require={
-        "dev": ["check-manifest", "nose"],
-        "test": ["coverage", "nose"],
+        "dev": ["check-manifest", "pytest"],
+        "test": ["coverage", "pytest"],
     },
 
     package_data={

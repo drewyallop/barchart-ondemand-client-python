@@ -7,14 +7,14 @@ import io
 
 here = path.abspath(path.dirname(__file__))
 
-NAME = "barchart"
-with io.open(path.join(here, NAME, "version.py"), "rt", encoding="UTF-8") as f:
+NAME = "barchart-ondemand-client-python"
+with io.open(path.join(here, "barchart", "version.py"), "rt", encoding="UTF-8") as f:
     exec(f.read())
 
 setup(
     name=NAME,
     version=__version__,
-    description="A Python library to get data from BarChart API",
+    description="A Python library to get data from BarChartOnDemand API",
     long_description="README.rst",
     url=__url__,
     author=__author__,
@@ -38,7 +38,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
 
-    keywords="barchartondemand python trading data interface",
+    keywords="BarChartOnDemand python trading data client interface",
 
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
     install_requires=[],

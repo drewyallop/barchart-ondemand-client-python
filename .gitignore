@@ -65,3 +65,6 @@ target/
 
 # apikey...
 apikey.sh
+
+# Generated doc's
+README.rst

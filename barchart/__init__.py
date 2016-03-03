@@ -14,7 +14,13 @@ import requests
 import six
 from collections import OrderedDict
 
+# NOTE: you can override this with environment settings
+# For Free Access (getQuote and getHistory only)
 URL_BASE = "http://marketdata.websol.barchart.com"
+# For paid access (requires license)
+# URL_BASE = "http://ondemand.websol.barchart.com"
+
+
 TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S%z"
 DATE_FMT = "%Y-%m-%d"
 TIMESTAMP_NOSEP_FMT = "%Y%m%d%H%M%S"
@@ -39,10 +45,19 @@ logger = logging.getLogger(__name__)
 # Change to INFO to get logging...
 logger.setLevel(logging.INFO)
 
+# Look for API_KEY (required) and URL (optional)
 try:
     API_KEY = os.environ["BARCHART_API_KEY"]
 except:
+    # NOTE: This will not work... but should fail gracefully....
     API_KEY = ""
+try:
+    URL_BASE = os.environ["BARCHART_URL_BASE"]
+except:
+    # NOTE: default is free data....
+    pass
+logger.info("API_KEY={0}".format(API_KEY))
+logger.info("URL_BASE={0}".format(URL_BASE))
 
 
 def _create_from(session):
@@ -130,7 +145,7 @@ def getQuote(symbols, fields=None, session=None):
     Returns stock quote for one (or several) symbol(s), comma separated.
 
     getQuote sample query:
-        http://marketdata.websol.barchart.com/getQuote.json?key=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
+        http://marketdata.websol.barchart.com/getQuote.json?apikey=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
 
     Fields always returned are:
 
@@ -200,11 +215,13 @@ def getQuote(symbols, fields=None, session=None):
     endpoint = "/getQuote.json"
     url = URL_BASE + endpoint
     params = {
-        "key": API_KEY,
+        "apikey": API_KEY,
         "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
         "fields": ",".join(fields) if isinstance(fields, list) else fields
     }
     session = _create_from(session)
+    logger.debug("getQuote url: {0}".format(url))
+    logger.debug("getQuote params: {0}".format(params))
     response = session.get(url, params=params)
     response = _parse_json_response(response)
     results = response["results"]
@@ -276,7 +293,7 @@ def _getSingleHistory(
     url = URL_BASE + endpoint
 
     params = {
-        "key": API_KEY,
+        "apikey": API_KEY,
         "symbol": symbol,
         "type": typ,
         "startDate": startDate,
@@ -289,6 +306,8 @@ def _getSingleHistory(
     if interval:
         params["interval"] = interval
     session = _create_from(session)
+    logger.debug("getSingleHistory url: {0}".format(url))
+    logger.debug("getSingleHistory params: {0}".format(params))
     response = session.get(url, params=params)
     response = _parse_json_response(response)
     d = response["results"]
@@ -355,12 +374,12 @@ def getHistory(
 
 def getFinancialHighlights(symbols, fields=None, session=None):
     """
-    (CURRENTLY UNTESTED - waiting on key...)
+    (CURRENTLY, This requires a PAID key...)
 
     Returns financial highlights for one (or several) symbol(s), comma separated.
 
     getFinancialHighlights sample query:
-        http://marketdata.websol.barchart.com/getFinancialHighlights.json?key=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
+        http://ondemand.websol.barchart.com/getFinancialHighlights.json?apikey=YOURAPIKEY&symbols=BAC,IBM,GOOG,HBAN
 
     Fields always returned are:
 
@@ -399,11 +418,13 @@ def getFinancialHighlights(symbols, fields=None, session=None):
     endpoint = "/getFinancialHighlights.json"
     url = URL_BASE + endpoint
     params = {
-        "key": API_KEY,
+        "apikey": API_KEY,
         "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
         "fields": ",".join(fields) if isinstance(fields, list) else fields
     }
     session = _create_from(session)
+    logger.debug("getFinancialHighlights url: {0}".format(url))
+    logger.debug("getFinancialHighlights params: {0}".format(params))
     response = session.get(url, params=params)
     response = _parse_json_response(response)
     results = response["results"]

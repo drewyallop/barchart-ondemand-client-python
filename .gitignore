@@ -57,5 +57,14 @@ docs/_build/
 # PyBuilder
 target/
 
-#
+# Autoenv files
+.env
+
+# pyenv...
+.python-version
+
+# apikey...
+apikey.sh
+
+# Generated doc's
 README.rst

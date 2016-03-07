@@ -140,7 +140,7 @@ def _parse_date(results, cols, date_fmt=DATE_FMT):
     return results
 
 
-def getQuote(symbols, fields=None, session=None):
+def getQuote(symbols, apikey=API_KEY, url_base=URL_BASE, fields=None, session=None):
     """
     Returns stock quote for one (or several) symbol(s), comma separated.
 
@@ -213,9 +213,9 @@ def getQuote(symbols, fields=None, session=None):
     """
 
     endpoint = "/getQuote.json"
-    url = URL_BASE + endpoint
+    url = url_base + endpoint
     params = {
-        "apikey": API_KEY,
+        "apikey": apikey,
         "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
         "fields": ",".join(fields) if isinstance(fields, list) else fields
     }
@@ -239,6 +239,8 @@ def getQuote(symbols, fields=None, session=None):
 
 def _getSingleHistory(
     symbol,
+    apikey=API_KEY,
+    url_base=URL_BASE,
     startDate=None,
     endDate=None,
     typ="daily",
@@ -290,10 +292,10 @@ def _getSingleHistory(
     """
 
     endpoint = "/getHistory.json"
-    url = URL_BASE + endpoint
+    url = url_base + endpoint
 
     params = {
-        "apikey": API_KEY,
+        "apikey": apikey,
         "symbol": symbol,
         "type": typ,
         "startDate": startDate,
@@ -320,7 +322,9 @@ def _getSingleHistory(
 
 def getHistory(
     symbols,
-    startDate,
+    apikey=API_KEY,
+    url_base=URL_BASE,
+    startDate=None,
     endDate=None,
     typ="daily",
     maxRecords=None,
@@ -349,6 +353,8 @@ def getHistory(
         for symbol in symbols:
             d[symbol] = _getSingleHistory(
                 symbol,
+                apikey,
+                url_base,
                 startDate,
                 endDate,
                 typ,
@@ -360,6 +366,8 @@ def getHistory(
     else:
         d[symbols] = _getSingleHistory(
             symbols,
+            apikey,
+            url_base,
             startDate,
             endDate,
             typ,
@@ -372,7 +380,7 @@ def getHistory(
     return d  # returns an OrderedDict
 
 
-def getFinancialHighlights(symbols, fields=None, session=None):
+def getFinancialHighlights(symbols, apikey=API_KEY, url_base=URL_BASE, fields=None, session=None):
     """
     (CURRENTLY, This requires a PAID key...)
 
@@ -416,9 +424,9 @@ def getFinancialHighlights(symbols, fields=None, session=None):
     """
 
     endpoint = "/getFinancialHighlights.json"
-    url = URL_BASE + endpoint
+    url = url_base + endpoint
     params = {
-        "apikey": API_KEY,
+        "apikey": apikey,
         "symbols": ",".join(symbols) if isinstance(symbols, list) else symbols,
         "fields": ",".join(fields) if isinstance(fields, list) else fields
     }

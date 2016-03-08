@@ -1,21 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
+from codecs import open     # To use a consistent encoding
 from os import path
-import io
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
 NAME = "barchart-ondemand-client-python"
-with io.open(path.join(here, "barchart", "version.py"), "rt", encoding="UTF-8") as f:
+with open(path.join(here, "barchart", "version.py"), "r", encoding="utf-8") as f:
     exec(f.read())
+
+with open(path.join(here, "README.rst"), "r", encoding="utf-8") as f:
+    long_desc = f.read()
 
 setup(
     name=NAME,
     version=__version__,
     description="A Python library to get data from BarChartOnDemand API",
-    long_description="README.rst",
+    long_description=long_desc,
     url=__url__,
     author=__author__,
     author_email=__email__,

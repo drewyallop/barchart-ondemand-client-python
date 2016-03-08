@@ -1,6 +1,11 @@
 Python client for Barchart OnDemand Changelog
 ---------------------------------------------
 
+- 0.0.4 - API changes
+  * Change API to pass apikey and url
+  * Correct setup.py to use README.rst as long_description
+  * update requirements
+
 - 0.0.3 - Initial public release on pypi <ssharkey@lanshark.com>
   * removed panda support
   * added limited getFinancialHighlights

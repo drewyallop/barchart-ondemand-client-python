@@ -1,6 +1,8 @@
 Python client for Barchart OnDemand Changelog
 ---------------------------------------------
 
+- 0.0.5 - dependency updates
+
 - 0.0.4 - API changes
   * Change API to pass apikey and url
   * Correct setup.py to use README.rst as long_description

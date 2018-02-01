@@ -55,8 +55,14 @@ try:
 except:
     # NOTE: default is free data....
     pass
+try:
+    USE_HIGHLIGHTS = os.environ["BARCHART_HIGHLIGHTS"]
+except:
+    USE_HIGHLIGHTS = False
+
 logger.info("API_KEY={0}".format(API_KEY))
 logger.info("URL_BASE={0}".format(URL_BASE))
+logger.info("USE_HIGHLIGHTS={0}".format(USE_HIGHLIGHTS))
 
 
 def _create_from(session):
@@ -90,13 +96,15 @@ def _parse_json_response(response):
                 return response
             else:
                 raise NotImplementedError("Error code: {0} - {1}".format(
-                    response["status"]["code"], response["status"]["message"]
+                    response["status"]["code"],
+                    response["status"]["message"]
                 ))
         except Exception as err:
             raise err
     else:
         raise NotImplementedError("HTTP status code is {0} instead of {1}".format(
-            status_code, status_code_expected
+            status_code,
+            status_code_expected
         ))
 
 

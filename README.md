@@ -23,6 +23,10 @@ To set the URL_BASE (ondemand or marketdata) for these applications, set an envi
 
     export BARCHART_URL_BASE="marketdata.websol.barchartondemand.com"
 
+To enable the Financial Highlights (paid key required):
+
+    export BARCHART_USE_HIGHLIGHTS=True
+
 ### Additional remarks
 
 This project is not a [Barchart](http://www.barchartondemand.com/) project.  This project was forked from [femtotrader's](http://github.com/femtotrader) project and extended/modified.

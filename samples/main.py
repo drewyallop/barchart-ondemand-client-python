@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 
 from barchart import (
     getHistory,
@@ -15,6 +16,18 @@ from barchart import (
 # You can also set an environment variable using Bash
 # export BARCHART_API_KEY="YOURAPIKEY"
 
+# PAID KEY REQUIRED
+# =================
+# if you have a paid key, you can do
+#
+# export BARCHART_HIGHLIGHTS=True
+#
+# to enable that function
+try:
+    USE_HIGHLIGHTS = os.environ["BARCHART_HIGHLIGHTS"]
+except:
+    USE_HIGHLIGHTS = False
+
 
 # requests_cache is optional
 # use it to have a cache mechanism
@@ -23,8 +36,11 @@ from barchart import (
 import datetime
 import pprint
 import requests_cache
-session = requests_cache.CachedSession(cache_name="cache",
-                                       backend="sqlite", expire_after=datetime.timedelta(days=1))
+session = requests_cache.CachedSession(
+    cache_name="cache",
+    backend="sqlite",
+    expire_after=datetime.timedelta(days=1)
+)
 session = None  # pass a None session to avoid caching queries
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -154,22 +170,23 @@ try:
 except NotImplementedError as err:
     print("getHistory failed: {}".format(err))
 
-# getFinancialHighlights with ONE symbol
-# ======================================
-print("\n{0} FinancialHighlights".format(one_symbol))
-print("=======================")
-try:
-    quote = getFinancialHighlights(one_symbol, fields=financial_fields, session=session)
-    print(pp.pprint(quote))
-except NotImplementedError as err:
-    print("getFinancialHighlights failed: {}".format(err))
+if USE_HIGHLIGHTS:
+    # getFinancialHighlights with ONE symbol
+    # ======================================
+    print("\n{0} FinancialHighlights".format(one_symbol))
+    print("=======================")
+    try:
+        quote = getFinancialHighlights(one_symbol, fields=financial_fields, session=session)
+        print(pp.pprint(quote))
+    except NotImplementedError as err:
+        print("getFinancialHighlights failed: {}".format(err))
 
-# getFinancialHighlights with SEVERAL symbols
-# ===========================================
-print("\n{0} FinancialHighlights".format(many_symbols))
-print("================================================")
-try:
-    financial_highlights = getFinancialHighlights(many_symbols, fields=financial_fields, session=session)
-    print(pp.pprint(financial_highlights))
-except NotImplementedError as err:
-    print("getFinancialHighlights failed: {}".format(err))
+    # getFinancialHighlights with SEVERAL symbols
+    # ===========================================
+    print("\n{0} FinancialHighlights".format(many_symbols))
+    print("================================================")
+    try:
+        financial_highlights = getFinancialHighlights(many_symbols, fields=financial_fields, session=session)
+        print(pp.pprint(financial_highlights))
+    except NotImplementedError as err:
+        print("getFinancialHighlights failed: {}".format(err))

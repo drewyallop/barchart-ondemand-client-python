@@ -1,5 +1,8 @@
 Python client for Barchart OnDemand Changelog
 ---------------------------------------------
+- 0.0.6 - make getFinancialHighlights optional
+  * update dependencies
+  * make getFinancialHighlights optional
 
 - 0.0.5 - dependency updates
 
